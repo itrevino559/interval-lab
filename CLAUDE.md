@@ -8,7 +8,9 @@ The app has four tabs (Tuning, Harmonics, Intervals, Temperament), each with Sim
 except Tuning and Temperament, which use a harmonic-rich tone so beats are audible. The current draft is built in
 ~/Desktop/Claude/Misc Claude/interval-lab-v2.html and copied over index.html to publish.
 index.html is the whole app: one self-contained file with no outside requests (no CDNs, fonts or analytics); keep it that way
-so it works offline on school Chromebooks and iPads. Keep the doctype, `lang`, charset, viewport and description meta,
+so it works offline on school Chromebooks and iPads. The one exception is ads (Ivan's decision, Nov 2026): the app works fully
+offline, and only when online does it load Google's ad code, set in the `ADS` config at the top of the script. While `ADS.client`
+is empty nothing loads; if the ad code is blocked or the device is offline, the ad space stays hidden. Ads never cover the lessons or audio. Keep the doctype, `lang`, charset, viewport and description meta,
 and keep the credit footer ("Interval Lab · Made by Ivan · © 2026") at the end of `.wrap`.
 
 To publish an update: edit index.html, check it in a browser, then commit and push to main; Pages redeploys in a minute
