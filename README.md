@@ -8,7 +8,7 @@ Four tabs, each with a Simple and an Advanced mode:
 - **Intervals**: hear and see intervals as number ratios.
 - **Temperament**: compare just intonation with equal temperament.
 
-One offline HTML file; nothing loads from the internet.
+One HTML file that works fully offline. When online, it can show an ad at the bottom of the page (off until an AdSense ID is set in the `ADS` config).
 
 Live: https://itrevino559.github.io/interval-lab/
 
