@@ -3,11 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Interval Lab</title>
-<meta name="description" content="Start a tone, add more tones, and hear how simple number ratios make music.">
+<title>Interval Lab: hear tuning, harmonics, intervals and temperament</title>
+<meta name="description" content="A free music theory lab for grades 6–12. Tune by ear and hear beats, build the harmonic series, see intervals as ratios, and compare just intonation with equal temperament.">
+<link rel="canonical" href="https://itrevino559.github.io/interval-lab/">
+<meta name="theme-color" content="#3d4fd6">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Interval Lab">
+<meta property="og:title" content="Interval Lab: hear tuning, harmonics, intervals and temperament">
+<meta property="og:description" content="A free music theory lab for grades 6–12. Tune by ear, build the harmonic series, and compare just intonation with equal temperament.">
+<meta property="og:url" content="https://itrevino559.github.io/interval-lab/">
+<meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233d4fd6'/%3E%3Cpath d='M4 16q3-8 6 0t6 0 6 0 6 0' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
-/* Interval Lab, simple version: one screen of sine-wave tone buttons built from a starting tone. Nothing loads from the internet. */
+/* Interval Lab, simple version: one screen of sine-wave tone buttons built from a starting tone. Works fully offline; ads (see ADS in the script) load only when online. */
 :root {
   --bg: #f7f4ee; --surface: #ffffff; --ink: #1e1d2b; --muted: #5d6070; --line: #e3ddd1; --soft: #f0ebe1; --learn: #eef2fb;
   --stop: #d9572c;
@@ -17,6 +25,7 @@
   --keyw: #ffffff; --keyb: #2a2934;
   --body: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+  --on-c: #ffffff;   /* text on a filled color button */
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
@@ -24,13 +33,13 @@
   --t0: #8d9aff; --t1: #ff9466; --t2: #46c98f; --t3: #d38bf0; --t4: #f0b94d; --t5: #4fc3e3; --t6: #ff7aa8; --t7: #a8c94a; --t8: #a99aff;
   --t9: #e0b36a; --t10: #6fb3ee; --t11: #f08a8a; --t12: #6fd49a; --t13: #c99af0; --t14: #8ec3e0; --t15: #ff8fbf;
   --t16: #9acd32; --t17: #f6ad55; --t18: #4fd1c5; --t19: #b794f4; --t20: #f687b3; --t21: #63b3ed; --t22: #ecc94b; --t23: #68d391; --t24: #fc8181; --t25: #4dd0e1;
-  --keyw: #2b2b3a; --keyb: #0b0b11; color-scheme: dark } }
+  --keyw: #2b2b3a; --keyb: #0b0b11; --on-c: #13131b; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #13131b; --surface: #1c1c27; --ink: #ecebf3; --muted: #a4a4b8; --line: #32324a; --soft: #252534; --stop: #ff9466; --learn: #1f2236;
   --t0: #8d9aff; --t1: #ff9466; --t2: #46c98f; --t3: #d38bf0; --t4: #f0b94d; --t5: #4fc3e3; --t6: #ff7aa8; --t7: #a8c94a; --t8: #a99aff;
   --t9: #e0b36a; --t10: #6fb3ee; --t11: #f08a8a; --t12: #6fd49a; --t13: #c99af0; --t14: #8ec3e0; --t15: #ff8fbf;
   --t16: #9acd32; --t17: #f6ad55; --t18: #4fd1c5; --t19: #b794f4; --t20: #f687b3; --t21: #63b3ed; --t22: #ecc94b; --t23: #68d391; --t24: #fc8181; --t25: #4dd0e1;
-  --keyw: #2b2b3a; --keyb: #0b0b11; color-scheme: dark }
+  --keyw: #2b2b3a; --keyb: #0b0b11; --on-c: #13131b; color-scheme: dark }
 
 * { box-sizing: border-box }
 [hidden] { display: none !important }
@@ -43,6 +52,9 @@ p { margin: 0 }
 button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation }
 :focus-visible { outline: 3px solid var(--t0); outline-offset: 3px }
 .muted { color: var(--muted) }
+.mono { font-family: var(--mono) }
+/* read by screen readers and search engines, not shown */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0 }
 
 /* top controls */
 .bar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: space-between }
@@ -54,11 +66,11 @@ button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulat
 .vol { display: inline-flex; gap: 8px; align-items: center; background: var(--surface); border: 2px solid var(--line); border-radius: 999px; padding: 4px 14px 4px 12px; min-height: 52px }
 .vol svg { width: 22px; height: 22px; color: var(--muted) }
 .vol input { width: 110px; accent-color: var(--t0) }
-.stop { min-height: 52px; padding: 8px 22px; border-radius: 999px; border: 0; background: var(--stop); color: #fff; font-weight: 800; font-size: 1.05rem }
+.stop { min-height: 52px; padding: 8px 22px; border-radius: 999px; border: 0; background: var(--stop); color: var(--on-c); font-weight: 800; font-size: 1.05rem }
 
 .tabs { display: flex; flex-wrap: wrap; gap: 8px }
 .tabs button { min-height: 52px; padding: 8px 20px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); font-weight: 800; font-size: 1.05rem }
-.tabs button[aria-selected="true"] { background: var(--t0); border-color: var(--t0); color: #fff }
+.tabs button[aria-selected="true"] { background: var(--t0); border-color: var(--t0); color: var(--on-c) }
 @media (max-width: 560px) { .tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100% } .right { width: 100%; justify-content: space-between } }
 .soon .say { color: var(--muted) }
 .starts { display: grid; gap: 8px }
@@ -117,8 +129,8 @@ button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulat
 .k.on.kb-b { box-shadow: inset 0 0 0 3px var(--c) }
 .k.on .kl { color: var(--c) }
 .k.kb-b.on .kl { color: #fff }
-.k.playing { background: var(--c); border-color: var(--c); color: #fff }
-.k.playing .kl { color: #fff }
+.k.playing { background: var(--c); border-color: var(--c); color: var(--on-c) }
+.k.playing .kl, .k.kb-b.playing .kl { color: var(--on-c) }
 .k:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; z-index: 3 }
 .kl { font-weight: 900; font-size: .88rem; line-height: 1.1 }
 .kr { font: 800 1rem var(--mono) }
@@ -130,7 +142,7 @@ button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulat
   border-radius: 12px; padding: 3px 10px; display: grid; justify-items: center; line-height: 1.1; font: inherit; cursor: pointer; z-index: 3 }
 .pin b { font: 900 1rem var(--mono); color: var(--c) } .pin small { font: 700 .72rem var(--mono); color: var(--muted) }
 .pin::after { content: ""; position: absolute; left: 50%; bottom: -15px; transform: translateX(-50%); border: 7px solid transparent; border-top-color: var(--c) }
-.pin.playing { background: var(--c) } .pin.playing b, .pin.playing small { color: #fff }
+.pin.playing { background: var(--c) } .pin.playing b, .pin.playing small { color: var(--on-c) }
 .kcap { color: var(--muted); font-size: .9rem; margin-top: 4px }
 .ph { margin: 0; font-size: 1.35rem }
 #stringCv { height: 220px; background: var(--soft) }
@@ -189,7 +201,7 @@ table.pt tbody tr:hover td, table.pt tbody tr.cur td { background: var(--soft) }
 .tp-note { font-size: .95rem; color: var(--muted) }
 .tp-note b { color: var(--ink) }
 .climbing > :not(.say) { display: none !important }
-.climb { min-height: 52px; padding: 8px 22px; border-radius: 999px; border: 0; background: var(--t0); color: #fff; font-weight: 800; font-size: 1.02rem }
+.climb { min-height: 52px; padding: 8px 22px; border-radius: 999px; border: 0; background: var(--t0); color: var(--on-c); font-weight: 800; font-size: 1.02rem }
 .steps { font-size: clamp(1.1rem, 3.4vw, 1.5rem); gap: 10px 22px }
 .st-num { fill: var(--muted); font: 800 12px var(--mono) }
 .st-off { fill: var(--stop); font: 700 10px var(--mono) }
@@ -205,7 +217,7 @@ table.pt tbody tr:hover td, table.pt tbody tr.cur td { background: var(--soft) }
 .tone .name { font-weight: 800; font-size: 1.05rem }
 .tone .state { margin-top: 6px; font-size: .82rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--c) }
 .tone[aria-pressed="true"] { background: var(--c); }
-.tone[aria-pressed="true"] .hz, .tone[aria-pressed="true"] .how, .tone[aria-pressed="true"] .name, .tone[aria-pressed="true"] .state { color: #fff }
+.tone[aria-pressed="true"] .hz, .tone[aria-pressed="true"] .how, .tone[aria-pressed="true"] .name, .tone[aria-pressed="true"] .state { color: var(--on-c) }
 .tone[aria-pressed="true"]::after { content: ""; position: absolute; inset: -9px; border-radius: 28px; border: 3px solid var(--c); opacity: 0; animation: ring 1.2s ease-out infinite }
 @keyframes ring { from { opacity: .6; transform: scale(.97) } to { opacity: 0; transform: scale(1.04) } }
 .tone.first .name::before { content: "★ " }
@@ -247,7 +259,7 @@ body.adv .tone { min-height: 150px }
 body.adv .tone .hz { font-size: clamp(1.5rem, 3.6vw, 2rem) }
 .tone .hz { white-space: nowrap }
 .tone .cents { font: 700 .78rem var(--mono); color: var(--muted) }
-.tone[aria-pressed="true"] .cents { color: #fff }
+.tone[aria-pressed="true"] .cents { color: var(--on-c) }
 .own { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; background: var(--surface); border: 2px dashed var(--line); border-radius: 18px; padding: 12px 16px }
 .own .frac input { width: 4.2rem; min-height: 44px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); font: 800 1.2rem var(--mono); text-align: center }
 .own .frac { gap: 0 }
@@ -260,11 +272,15 @@ body.adv .tone .hz { font-size: clamp(1.5rem, 3.6vw, 2rem) }
 .short li::before { content: "•"; color: var(--muted); margin-right: 10px }
 canvas { width: 100%; height: 240px; display: block; border-radius: 14px; background: var(--soft) }
 footer { color: var(--muted); font-size: .85rem; text-align: center }
+footer a { color: inherit; font-weight: 700; text-underline-offset: 3px }
+.ad-slot { display: grid; gap: 4px; min-height: 100px; border-top: 2px dashed var(--line); padding-top: 12px }
+.ad-slot::before { content: "Advertisement"; font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 800 }
 @media (prefers-reduced-motion: reduce) { .tone[aria-pressed="true"]::after { animation: none } }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <h1 class="sr-only">Interval Lab: hear tuning, harmonics, intervals and temperament</h1>
   <div class="bar">
     <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
       <button role="tab" data-tab="tuning" aria-selected="true">Tuning</button>
@@ -312,7 +328,7 @@ footer { color: var(--muted); font-size: .85rem; text-align: center }
       <p class="say" id="say"></p>
       <div class="eqs" id="math" hidden></div>
       <ul class="short" id="sub"></ul>
-      <canvas id="waves" aria-label="The waves of the tones that are playing"></canvas>
+      <canvas id="waves" role="img" aria-label="The waves of the tones that are playing"></canvas>
       <ul class="short sub" style="font-size:.92rem">
         <li>Each colored line is one tone's wave, slowed down.</li>
         <li>The highest tone is on top.</li>
@@ -339,7 +355,7 @@ footer { color: var(--muted); font-size: .85rem; text-align: center }
         <svg id="tgGauge" viewBox="0 0 300 172" role="img" aria-label="Tuner needle"></svg>
         <div class="tg-read"><span class="label-s">Beats per second</span><b id="tgBeats"></b><p class="say" id="tgStatus" aria-live="polite"></p><p class="mono muted" id="tgFormula"></p></div>
       </div>
-      <canvas id="tgWobble" aria-label="How loud the sound is over the last few seconds"></canvas>
+      <canvas id="tgWobble" role="img" aria-label="How loud the sound is over the last few seconds"></canvas>
       <p class="kcap">The picture shows how loud the sound is over the last 3 seconds. Each bump is one beat.</p>
       <div class="srow adv-only">
         <div class="mode" id="tgSound" role="group" aria-label="Sound"><button data-w="harm" aria-pressed="true">With harmonics</button><button data-w="sine" aria-pressed="false">Pure sine</button></div>
@@ -370,7 +386,7 @@ footer { color: var(--muted); font-size: .85rem; text-align: center }
         <div class="slide-row"><span class="pure-l">Pure</span><input type="range" id="tpPos" min="0" max="100" step="1" value="0" aria-label="From pure to piano"><span class="eq-l">Piano</span></div>
         <div class="staffbox" id="tpRuler"></div>
         <p class="say" id="tpNow" aria-live="polite"></p>
-        <canvas id="tpWobble" aria-label="How loud the sound is over the last few seconds"></canvas>
+        <canvas id="tpWobble" role="img" aria-label="How loud the sound is over the last few seconds"></canvas>
         <p class="kcap">How loud the sound is over the last 3 seconds. Flat = pure. Bumps = beats (the wobble).</p>
       </div>
       <ul class="short" id="tpSay"></ul>
@@ -484,7 +500,7 @@ footer { color: var(--muted); font-size: .85rem; text-align: center }
       </div>
       <div class="mode adv-only" id="strMode" role="group" aria-label="Touch or press"><button data-s="touch" aria-pressed="true">Touch lightly</button><button data-s="press" aria-pressed="false">Press down</button></div>
       <div class="srow" id="fingerBtns" role="group" aria-label="Where to put your finger"></div>
-      <canvas id="stringCv" aria-label="A vibrating string with a finger touching it"></canvas>
+      <canvas id="stringCv" role="img" aria-label="A vibrating string with a finger touching it"></canvas>
       <div class="eqs" id="fingerSay" aria-live="polite"></div>
     </div>
     <div class="panel" data-only="harmonics">
@@ -521,10 +537,43 @@ footer { color: var(--muted); font-size: .85rem; text-align: center }
 
 
 
-  <footer>Interval Lab · Made by Ivan · © 2026</footer>
+  <!-- ad space: stays hidden unless ads are turned on (see ADS below), the device is online, and the ad code loads -->
+  <aside class="ad-slot" id="adBottom" aria-label="Advertisement" hidden></aside>
+  <footer>Interval Lab · Made by Ivan · © 2026 · <a href="privacy.html">Privacy</a></footer>
 </div>
 
 <script>
+/* ---------- ads (online only) ----------
+   The app never needs the internet. Ads are an extra that only loads when:
+   1. ADS.client below is filled in,
+   2. the device is online, and
+   3. Google's ad code actually loads (a school filter or ad blocker just leaves the space hidden).
+   To turn ads on, fill in the two IDs from your AdSense account:
+     client: your publisher ID, like 'ca-pub-1234567890123456'
+     slot:   the ad unit ID for the bottom ad, like '1234567890'
+   While client is empty, nothing loads from the internet at all. */
+const ADS = { client: '', slots: { adBottom: '' } };
+(function ads() {
+  if (!/^ca-pub-\d{10,20}$/.test(ADS.client)) return;   // not set up yet: stay fully offline
+  let tried = false;
+  const load = () => {
+    if (tried || !navigator.onLine) return;
+    tried = true;
+    const s = document.createElement('script');
+    s.async = true; s.crossOrigin = 'anonymous';
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADS.client;
+    s.onload = () => Object.entries(ADS.slots).forEach(([id, slot]) => {
+      const box = document.getElementById(id); if (!box || !/^\d+$/.test(slot)) return;
+      box.innerHTML = `<ins class="adsbygoogle" style="display:block" data-ad-client="${ADS.client}" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
+      box.hidden = false;
+      try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { box.hidden = true; }
+    });
+    s.onerror = () => { tried = false; s.remove(); };   // blocked or offline: keep the space hidden, try again when back online
+    document.head.appendChild(s);
+  };
+  load();
+  window.addEventListener('online', load);
+})();
 const $ = id => document.getElementById(id);
 const fmtHz = v => Math.abs(v - Math.round(v)) < 0.05 ? String(Math.round(v)) : v.toFixed(1);
 const gcd = (a, b) => b ? gcd(b, a % b) : a;
@@ -642,6 +691,9 @@ function stopAll() { stopTemp(); stopTune(); stopPress(); FINGER = 0; CLIMB = -1
 function setBase(b) {
   S.base = Math.min(1000, Math.max(40, b));
   voices.forEach((v, i) => v.o.frequency.setTargetAtTime(hzOf(TONES[i]), ctx.currentTime, 0.03));
+  // the Tuning notes and the pressed-down string follow the new starting tone too
+  if (TAB === 'tuning' && TG.voices) tgUpdate();
+  if (PRESS && FINGER > 1) PRESS.o.frequency.setTargetAtTime(S.base * FINGER / (FINGER - 1), ctx.currentTime, 0.03);
   render();
 }
 
@@ -918,8 +970,10 @@ function drawString(now) {
   g.fillStyle = ink; g.fillRect(x0 - 6, y - 40, 6, 80); g.fillRect(x1, y - 40, 6, 80);
   // the finger: resting lightly, or pressing the string down
   if (FINGER > 1) {
-    g.fillStyle = ink; g.beginPath(); g.roundRect(fx - 10, y - (press ? 62 : 70), 20, press ? 62 : 64, 10); g.fill();
-    g.fillStyle = cs.getPropertyValue('--surface'); g.beginPath(); g.roundRect(fx - 6, y - (press ? 12 : 20), 12, 10, 4); g.fill();
+    // older iPads (iOS 15 and earlier) have no roundRect, so fall back to a plain rectangle there
+    const rr = (x, yy, w, h, r) => g.roundRect ? g.roundRect(x, yy, w, h, r) : g.rect(x, yy, w, h);
+    g.fillStyle = ink; g.beginPath(); rr(fx - 10, y - (press ? 62 : 70), 20, press ? 62 : 64, 10); g.fill();
+    g.fillStyle = cs.getPropertyValue('--surface'); g.beginPath(); rr(fx - 6, y - (press ? 12 : 20), 12, 10, 4); g.fill();
     g.fillStyle = ink; g.font = '800 12px ' + font; g.textAlign = 'left'; g.fillText(press ? 'finger presses down' : 'finger touches lightly', fx + 16, y - 52);
   }
   // length brackets under the string
@@ -958,7 +1012,7 @@ function startTune() {
 }
 function stopTune() { if (!TG.voices) return; TG.voices.forEach(v => { v.g.gain.setTargetAtTime(0, ctx.currentTime, 0.05); v.o.stop(ctx.currentTime + 0.4); }); TG.voices = null; }
 function tgUpdate() { if (TG.voices) { TG.voices[0].o.frequency.setTargetAtTime(S.base, ctx.currentTime, 0.02); TG.voices[1].o.frequency.setTargetAtTime(tgHz(), ctx.currentTime, 0.02); } renderTune(); }
-function tgNew() { const big = S.adv ? 25 : 35; TG.off = (Math.random() < 0.5 ? -1 : 1) * (8 + Math.random() * big); tgUpdate(); }
+function tgNew() { const big = S.adv ? 25 : 32; /* keeps every challenge inside the slider's ±40 cents */ TG.off = (Math.random() < 0.5 ? -1 : 1) * (8 + Math.random() * big); tgUpdate(); }
 function renderTune() {
   const list = TUNE_TARGETS.map((t, i) => ({ t, i })).filter(x => S.adv || x.t.simple);
   if (!S.adv && !tgT().simple) TG.t = 0;
@@ -1112,7 +1166,7 @@ function renderTemp() {
   if (!S.adv) return;
   // every interval, pure vs piano
   $('tpTable').innerHTML = TP_IVS.filter(x => !x.chord).map(x => { const jc = cents(x.r[0]), dd = Math.round(x.k[0] * 100 - jc), [pp, qq] = x.f[0];
-    return `<tr data-iv="${x.id}" class="${x.id === TP.iv ? 'cur' : ''}"><td><b>${x.name}</b></td><td class="mono">${pp}/${qq}</td><td class="mono">${jc.toFixed(1)}¢</td><td class="mono">${x.k[0] * 100}¢ = ${x.k[0]} half step${x.k[0] > 1 ? 's' : ''}</td>
+    return `<tr data-iv="${x.id}" tabindex="0" class="${x.id === TP.iv ? 'cur' : ''}"><td><b>${x.name}</b></td><td class="mono">${pp}/${qq}</td><td class="mono">${jc.toFixed(1)}¢</td><td class="mono">${x.k[0] * 100}¢ = ${x.k[0]} half step${x.k[0] > 1 ? 's' : ''}</td>
       <td class="mono" style="color:var(--${Math.abs(dd) >= 10 ? 't1' : 't2'})">${dd ? `${sgn(dd)}${Math.abs(dd)}¢ ${dd > 0 ? 'wider' : 'narrower'}` : 'same'}</td></tr>`; }).join('');
   renderSystems();
 }
@@ -1237,7 +1291,7 @@ function renderPairs(ids) {
   const rows = harmPairs(16).map(r => {
     const c = cents(r.p / r.q), k = Math.round(c / 100), d = Math.round(c - 100 * k), nm = NAMED[r.q + ':' + r.p];
     const ji = JI.has(`${r.p}/${r.q}`), [a, b] = r.pairs[0];
-    return `<tr data-a="${a}" data-b="${b}" class="${playing === a + ':' + b ? 'cur' : ''}"><td class="mono"><b>${r.p}/${r.q}</b></td>
+    return `<tr data-a="${a}" data-b="${b}" tabindex="0" class="${playing === a + ':' + b ? 'cur' : ''}"><td class="mono"><b>${r.p}/${r.q}</b></td>
       <td class="mono">${r.pairs.map(([x, y]) => `H${x}/H${y}`).join(', ')}</td>
       <td>${nm ? cap(bare(nm)) : `close to a ${ET_WORDS[k]}`}</td>
       <td>${ji ? '<span class="yes">✓ just interval</span>' : '<span class="no">extra (harmonic series only)</span>'}</td>
@@ -1400,7 +1454,24 @@ function ownCompare(p, q) {
     below && above ? `It sits between <b>${fr(below)} = ${d(below.p / below.q)}</b> (${below.name.toLowerCase()}) and <b>${fr(above)} = ${d(above.p / above.q)}</b> (${above.name.toLowerCase()}).` : '',
     `Closest clean ratio: <b>${fr(near)}</b>, only ${d(Math.abs(near.p / near.q - r))} away.`].filter(Boolean));
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') stopAll(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { stopAll(); return; }
+  // Enter or Space works the tappable table rows and the tuning-system key bars, like a button
+  const el = e.target.closest && e.target.closest('tr[tabindex], g[role="button"]');
+  if (el && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    const sel = ['data-iv', 'data-a', 'data-key'].filter(a => el.hasAttribute(a)).map(a => `[${a}="${el.getAttribute(a)}"]`).join('') + (el.dataset.b ? `[data-b="${el.dataset.b}"]` : '');
+    const box = el.closest('[id]');
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    box?.querySelector(sel)?.focus({ preventScroll: true });   // the row was redrawn, so put the focus back on it
+  }
+});
+// arrow keys move between the four tabs
+$('tabs').addEventListener('keydown', e => {
+  const bs = [...$('tabs').querySelectorAll('button')], i = bs.indexOf(e.target), d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+  if (i < 0 || !d) return;
+  e.preventDefault(); const b = bs[(i + d + bs.length) % bs.length]; showTab(b.dataset.tab); b.focus();
+});
 $('vol').addEventListener('input', () => { if (master) master.gain.setTargetAtTime(volLevel(), ctx.currentTime, 0.05); });
 function showTab(name) {
   stopAll();
