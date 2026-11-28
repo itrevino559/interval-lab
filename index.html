@@ -272,6 +272,7 @@ body.adv .tone .hz { font-size: clamp(1.5rem, 3.6vw, 2rem) }
 .short li::before { content: "•"; color: var(--muted); margin-right: 10px }
 canvas { width: 100%; height: 240px; display: block; border-radius: 14px; background: var(--soft) }
 footer { color: var(--muted); font-size: .85rem; text-align: center }
+footer a { color: inherit; font-weight: 700; text-underline-offset: 3px }
 .ad-slot { display: grid; gap: 4px; min-height: 100px; border-top: 2px dashed var(--line); padding-top: 12px }
 .ad-slot::before { content: "Advertisement"; font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 800 }
 @media (prefers-reduced-motion: reduce) { .tone[aria-pressed="true"]::after { animation: none } }
@@ -538,7 +539,7 @@ footer { color: var(--muted); font-size: .85rem; text-align: center }
 
   <!-- ad space: stays hidden unless ads are turned on (see ADS below), the device is online, and the ad code loads -->
   <aside class="ad-slot" id="adBottom" aria-label="Advertisement" hidden></aside>
-  <footer>Interval Lab · Made by Ivan · © 2026</footer>
+  <footer>Interval Lab · Made by Ivan · © 2026 · <a href="privacy.html">Privacy</a></footer>
 </div>
 
 <script>
